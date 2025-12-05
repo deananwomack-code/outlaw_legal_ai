@@ -46,16 +46,16 @@ logger = logging.getLogger("outlaw")
 # ============================================================
 
 class EvidenceItem(BaseModel):
-    label: str = Field(..., example="Payment proof")
-    description: str = Field(..., example="Bank transfer receipt")
+    label: str = Field(..., json_schema_extra={"example": "Payment proof"})
+    description: str = Field(..., json_schema_extra={"example": "Bank transfer receipt"})
 
 
 class LegalSupportRequest(BaseModel):
-    jurisdiction: str = Field(..., example="California")
-    county: str = Field(..., example="Riverside")
-    facts: str = Field(..., min_length=20, example="Buyer failed to pay after taking possession of horse.")
+    jurisdiction: str = Field(..., json_schema_extra={"example": "California"})
+    county: str = Field(..., json_schema_extra={"example": "Riverside"})
+    facts: str = Field(..., min_length=20, json_schema_extra={"example": "Buyer failed to pay after taking possession of horse."})
     evidence: Optional[List[EvidenceItem]] = []
-    requested_output: str = Field("json", example="json", description="json or pdf")
+    requested_output: str = Field("json", description="json or pdf", json_schema_extra={"example": "json"})
 
 
 # ============================================================
@@ -84,7 +84,7 @@ async def create_analysis(request: LegalSupportRequest, background_tasks: Backgr
             jurisdiction=request.jurisdiction,
             county=request.county,
             facts=request.facts,
-            evidence=[e.dict() for e in request.evidence]
+            evidence=[e.model_dump() for e in request.evidence]
         )
         data = response_obj.to_dict()
 
