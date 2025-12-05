@@ -36,6 +36,11 @@ BRANDING = {
 # DRAWING HELPERS
 # ============================================================
 
+# Cache the resolved logo path at module level to avoid repeated path resolution
+_LOGO_PATH = Path(__file__).resolve().parent / BRANDING["logo_path"]
+_LOGO_EXISTS = _LOGO_PATH.exists()
+
+
 def _draw_header(c: canvas.Canvas, width: float, height: float):
     accent = BRANDING["accent_color"]
     c.setFillColor(accent)
@@ -46,11 +51,10 @@ def _draw_header(c: canvas.Canvas, width: float, height: float):
     c.setFont("Helvetica", 10)
     c.drawString(1 * inch, height - 0.95 * inch, BRANDING["tagline"])
 
-    # Draw logo if available
-    logo_path = Path(__file__).resolve().parent / BRANDING["logo_path"]
-    if logo_path.exists():
+    # Draw logo if available (using cached path check)
+    if _LOGO_EXISTS:
         try:
-            img = ImageReader(str(logo_path))
+            img = ImageReader(str(_LOGO_PATH))
             c.drawImage(img, width - 1.5 * inch, height - 0.95 * inch,
                         width=1.1 * inch, height=0.7 * inch, mask="auto")
         except Exception as e:

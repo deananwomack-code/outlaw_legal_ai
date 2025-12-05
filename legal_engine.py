@@ -58,6 +58,16 @@ class WinningFactor:
         """Calculate composite winning score."""
         return max(0, (self.element_score + self.evidence_score + self.clarity_score)//3 - self.risk_penalty)
 
+    def to_dict(self) -> Dict[str, int]:
+        """Convert to dict including the computed overall property."""
+        return {
+            "element_score": self.element_score,
+            "evidence_score": self.evidence_score,
+            "clarity_score": self.clarity_score,
+            "risk_penalty": self.risk_penalty,
+            "overall": self.overall,
+        }
+
 
 @dataclass
 class LegalSupportResponse:
@@ -70,12 +80,18 @@ class LegalSupportResponse:
     score: WinningFactor
 
     def to_dict(self) -> Dict[str, Any]:
-        return asdict(self)
+        result = asdict(self)
+        # Replace score dict with one that includes the computed 'overall' property
+        result["score"] = self.score.to_dict()
+        return result
 
 
 # ============================================================
 # PUBLIC API LOOKUP
 # ============================================================
+
+# Reduced timeout for faster fallback to local data when API is unreachable
+API_TIMEOUT_SECONDS = 3
 
 def fetch_statutes_from_api(jurisdiction: str, query: str) -> List[Statute]:
     """
@@ -84,7 +100,7 @@ def fetch_statutes_from_api(jurisdiction: str, query: str) -> List[Statute]:
     """
     url = f"https://api.govinfo.gov/collections/{jurisdiction.lower()}code/2022-01-01"
     try:
-        r = requests.get(url, timeout=6)
+        r = requests.get(url, timeout=API_TIMEOUT_SECONDS)
         r.raise_for_status()
         data = r.json()
         results = []
@@ -158,14 +174,15 @@ def assess_risks(facts: str) -> List[RiskItem]:
 
 def compute_score(facts: str, evidence_count: int) -> WinningFactor:
     """Compute a simple case-strength score based on facts length and evidence."""
+    facts_lower = facts.lower()  # Cache lowercase conversion
     base = 80 if len(facts) > 60 else 60
-    if "breach" in facts.lower():
+    if "breach" in facts_lower:
         base += 5
     return WinningFactor(
         element_score=90,
         evidence_score=min(100, 70 + evidence_count * 5),
         clarity_score=min(100, base),
-        risk_penalty=10 if "eye" in facts.lower() else 0
+        risk_penalty=10 if "eye" in facts_lower else 0
     )
 
 
