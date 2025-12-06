@@ -41,55 +41,55 @@ _LOGO_PATH = Path(__file__).resolve().parent / BRANDING["logo_path"]
 _LOGO_EXISTS = _LOGO_PATH.exists()
 
 
-def _draw_header(c: canvas.Canvas, width: float, height: float):
+def _draw_header(pdf_canvas: canvas.Canvas, width: float, height: float):
     accent = BRANDING["accent_color"]
-    c.setFillColor(accent)
-    c.rect(0, height - 1.0 * inch, width, 1.0 * inch, fill=True, stroke=False)
-    c.setFillColor(colors.white)
-    c.setFont("Helvetica-Bold", 16)
-    c.drawString(1 * inch, height - 0.75 * inch, BRANDING["firm_name"])
-    c.setFont("Helvetica", 10)
-    c.drawString(1 * inch, height - 0.95 * inch, BRANDING["tagline"])
+    pdf_canvas.setFillColor(accent)
+    pdf_canvas.rect(0, height - 1.0 * inch, width, 1.0 * inch, fill=True, stroke=False)
+    pdf_canvas.setFillColor(colors.white)
+    pdf_canvas.setFont("Helvetica-Bold", 16)
+    pdf_canvas.drawString(1 * inch, height - 0.75 * inch, BRANDING["firm_name"])
+    pdf_canvas.setFont("Helvetica", 10)
+    pdf_canvas.drawString(1 * inch, height - 0.95 * inch, BRANDING["tagline"])
 
     # Draw logo if available (using cached path check)
     if _LOGO_EXISTS:
         try:
             img = ImageReader(str(_LOGO_PATH))
-            c.drawImage(img, width - 1.5 * inch, height - 0.95 * inch,
+            pdf_canvas.drawImage(img, width - 1.5 * inch, height - 0.95 * inch,
                         width=1.1 * inch, height=0.7 * inch, mask="auto")
         except Exception as e:
             logger.warning(f"Could not draw logo: {e}")
 
-    c.setFillColor(colors.black)
+    pdf_canvas.setFillColor(colors.black)
 
 
-def _draw_footer(c: canvas.Canvas, width: float):
-    c.setFont("Helvetica-Oblique", 9)
-    c.setFillColor(colors.grey)
-    c.drawString(1 * inch, 0.7 * inch, BRANDING["footer_note"])
-    c.drawRightString(width - 0.5 * inch, 0.7 * inch, f"Page {c.getPageNumber()}")
-    c.setFillColor(colors.black)
+def _draw_footer(pdf_canvas: canvas.Canvas, width: float):
+    pdf_canvas.setFont("Helvetica-Oblique", 9)
+    pdf_canvas.setFillColor(colors.grey)
+    pdf_canvas.drawString(1 * inch, 0.7 * inch, BRANDING["footer_note"])
+    pdf_canvas.drawRightString(width - 0.5 * inch, 0.7 * inch, f"Page {pdf_canvas.getPageNumber()}")
+    pdf_canvas.setFillColor(colors.black)
 
 
-def _draw_section(c: canvas.Canvas, title: str, y: float) -> float:
-    c.setFont("Helvetica-Bold", 13)
-    c.setFillColor(BRANDING["accent_color"])
-    c.drawString(1 * inch, y, title)
-    c.setFillColor(colors.black)
-    return y - 18
+def _draw_section(pdf_canvas: canvas.Canvas, title: str, y_position: float) -> float:
+    pdf_canvas.setFont("Helvetica-Bold", 13)
+    pdf_canvas.setFillColor(BRANDING["accent_color"])
+    pdf_canvas.drawString(1 * inch, y_position, title)
+    pdf_canvas.setFillColor(colors.black)
+    return y_position - 18
 
 
-def _draw_paragraph(c: canvas.Canvas, text: str, y: float, max_width=500, lh=14) -> float:
+def _draw_paragraph(pdf_canvas: canvas.Canvas, text: str, y_position: float, max_width=500, line_height=14) -> float:
     lines = wrap(text, width=int(max_width / 7))
     for line in lines:
-        if y < 1 * inch:
-            c.showPage()
-            _draw_header(c, *LETTER)
-            y = LETTER[1] - 1.5 * inch
-        c.setFont("Helvetica", 11)
-        c.drawString(1 * inch, y, line)
-        y -= lh
-    return y - 6
+        if y_position < 1 * inch:
+            pdf_canvas.showPage()
+            _draw_header(pdf_canvas, *LETTER)
+            y_position = LETTER[1] - 1.5 * inch
+        pdf_canvas.setFont("Helvetica", 11)
+        pdf_canvas.drawString(1 * inch, y_position, line)
+        y_position -= line_height
+    return y_position - 6
 
 
 # ============================================================
@@ -99,55 +99,55 @@ def _draw_paragraph(c: canvas.Canvas, text: str, y: float, max_width=500, lh=14)
 def generate_pdf_report(data: Dict[str, Any], output_path: str) -> str:
     """Generate a simple multi-section PDF from analysis data."""
     logger.info(f"Generating PDF report → {output_path}")
-    c = canvas.Canvas(output_path, pagesize=LETTER)
+    pdf_canvas = canvas.Canvas(output_path, pagesize=LETTER)
     width, height = LETTER
 
-    _draw_header(c, width, height)
-    y = height - 1.4 * inch
+    _draw_header(pdf_canvas, width, height)
+    y_position = height - 1.4 * inch
 
     # Title section
-    c.setFont("Helvetica-Bold", 14)
-    c.drawString(1 * inch, y, "Legal Support Analysis Report")
-    y -= 25
-    c.setFont("Helvetica", 11)
-    c.drawString(1 * inch, y, f"Jurisdiction: {data.get('jurisdiction','')}")
-    y -= 14
-    c.drawString(1 * inch, y, f"County: {data.get('county','')}")
-    y -= 14
-    c.drawString(1 * inch, y, f"Generated: {datetime.now():%Y-%m-%d %H:%M}")
-    y -= 25
+    pdf_canvas.setFont("Helvetica-Bold", 14)
+    pdf_canvas.drawString(1 * inch, y_position, "Legal Support Analysis Report")
+    y_position -= 25
+    pdf_canvas.setFont("Helvetica", 11)
+    pdf_canvas.drawString(1 * inch, y_position, f"Jurisdiction: {data.get('jurisdiction','')}")
+    y_position -= 14
+    pdf_canvas.drawString(1 * inch, y_position, f"County: {data.get('county','')}")
+    y_position -= 14
+    pdf_canvas.drawString(1 * inch, y_position, f"Generated: {datetime.now():%Y-%m-%d %H:%M}")
+    y_position -= 25
 
     # Facts
-    y = _draw_section(c, "Facts", y)
-    y = _draw_paragraph(c, data.get("facts", ""), y)
+    y_position = _draw_section(pdf_canvas, "Facts", y_position)
+    y_position = _draw_paragraph(pdf_canvas, data.get("facts", ""), y_position)
 
     # Statutes
-    y = _draw_section(c, "Statutes", y)
-    for s in data.get("statutes", []):
-        y = _draw_paragraph(c, f"{s.get('citation', '')} — {s.get('title', '')}", y)
-        y = _draw_paragraph(c, s.get("summary", ""), y)
+    y_position = _draw_section(pdf_canvas, "Statutes", y_position)
+    for statute in data.get("statutes", []):
+        y_position = _draw_paragraph(pdf_canvas, f"{statute.get('citation', '')} — {statute.get('title', '')}", y_position)
+        y_position = _draw_paragraph(pdf_canvas, statute.get("summary", ""), y_position)
 
     # Procedures
-    y = _draw_section(c, "Procedures", y)
-    for p in data.get("procedures", []):
-        y = _draw_paragraph(c, f"• {p.get('name', '')}: {p.get('description', '')}", y)
+    y_position = _draw_section(pdf_canvas, "Procedures", y_position)
+    for procedure in data.get("procedures", []):
+        y_position = _draw_paragraph(pdf_canvas, f"• {procedure.get('name', '')}: {procedure.get('description', '')}", y_position)
 
     # Risks
-    y = _draw_section(c, "Risks", y)
-    for r in data.get("risks", []):
-        y = _draw_paragraph(c, f"[{r.get('severity', '').upper()}] {r.get('description', '')}", y)
-        y = _draw_paragraph(c, f"→ Mitigation: {r.get('mitigation', '')}", y)
+    y_position = _draw_section(pdf_canvas, "Risks", y_position)
+    for risk in data.get("risks", []):
+        y_position = _draw_paragraph(pdf_canvas, f"[{risk.get('severity', '').upper()}] {risk.get('description', '')}", y_position)
+        y_position = _draw_paragraph(pdf_canvas, f"→ Mitigation: {risk.get('mitigation', '')}", y_position)
 
     # Score
-    y = _draw_section(c, "Winning Factor", y)
-    sc = data.get("score", {})
-    y = _draw_paragraph(c, f"Overall Score: {sc.get('overall', '')}", y)
-    y = _draw_paragraph(c, f"Element Coverage: {sc.get('element_score', '')}", y)
-    y = _draw_paragraph(c, f"Evidence Strength: {sc.get('evidence_score', '')}", y)
-    y = _draw_paragraph(c, f"Narrative Clarity: {sc.get('clarity_score', '')}", y)
-    y = _draw_paragraph(c, f"Risk Penalty: {sc.get('risk_penalty', '')}", y)
+    y_position = _draw_section(pdf_canvas, "Winning Factor", y_position)
+    score_data = data.get("score", {})
+    y_position = _draw_paragraph(pdf_canvas, f"Overall Score: {score_data.get('overall', '')}", y_position)
+    y_position = _draw_paragraph(pdf_canvas, f"Element Coverage: {score_data.get('element_score', '')}", y_position)
+    y_position = _draw_paragraph(pdf_canvas, f"Evidence Strength: {score_data.get('evidence_score', '')}", y_position)
+    y_position = _draw_paragraph(pdf_canvas, f"Narrative Clarity: {score_data.get('clarity_score', '')}", y_position)
+    y_position = _draw_paragraph(pdf_canvas, f"Risk Penalty: {score_data.get('risk_penalty', '')}", y_position)
 
-    _draw_footer(c, width)
-    c.save()
+    _draw_footer(pdf_canvas, width)
+    pdf_canvas.save()
     logger.info(f"PDF report saved successfully → {output_path}")
     return output_path

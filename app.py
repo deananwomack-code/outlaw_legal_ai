@@ -84,14 +84,14 @@ async def create_analysis(request: LegalSupportRequest, background_tasks: Backgr
             jurisdiction=request.jurisdiction,
             county=request.county,
             facts=request.facts,
-            evidence=[e.model_dump() for e in request.evidence]
+            evidence=[evidence_item.model_dump() for evidence_item in request.evidence]
         )
         data = response_obj.to_dict()
 
         # PDF output
         if request.requested_output.lower() == "pdf":
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
-                pdf_path = tmp.name
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
+                pdf_path = temp_file.name
             generate_pdf_report(data, pdf_path)
             filename = f"OutlawLegalAI_{request.county}_Report.pdf"
             background_tasks.add_task(os.remove, pdf_path)
@@ -100,6 +100,6 @@ async def create_analysis(request: LegalSupportRequest, background_tasks: Backgr
         # JSON output
         return {"status": "success", "data": data}
 
-    except Exception as e:
+    except Exception as error:
         logger.exception("Error generating legal analysis:")
-        raise HTTPException(status_code=500, detail=f"Server Error: {e}")
+        raise HTTPException(status_code=500, detail=f"Server Error: {error}")

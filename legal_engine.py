@@ -100,9 +100,9 @@ def fetch_statutes_from_api(jurisdiction: str, query: str) -> List[Statute]:
     """
     url = f"https://api.govinfo.gov/collections/{jurisdiction.lower()}code/2022-01-01"
     try:
-        r = requests.get(url, timeout=API_TIMEOUT_SECONDS)
-        r.raise_for_status()
-        data = r.json()
+        api_response = requests.get(url, timeout=API_TIMEOUT_SECONDS)
+        api_response.raise_for_status()
+        data = api_response.json()
         results = []
         for item in data.get("packages", [])[:3]:
             title = item.get("title", "")
@@ -162,10 +162,10 @@ def fallback_procedures() -> List[ProceduralRule]:
 def assess_risks(facts: str) -> List[RiskItem]:
     """Simple keyword-based risk assessment."""
     risks = []
-    txt = facts.lower()
-    if "inspect" in txt or "eye" in txt:
+    facts_lowercase = facts.lower()
+    if "inspect" in facts_lowercase or "eye" in facts_lowercase:
         risks.append(RiskItem("medium", "Possible nondisclosure claim", "Show refusal to inspect."))
-    elif "oral" in txt:
+    elif "oral" in facts_lowercase:
         risks.append(RiskItem("medium", "Potential enforceability issue (oral contract).", "Provide corroborating evidence."))
     else:
         risks.append(RiskItem("low", "Minor procedural risk", "Ensure timely filing."))
@@ -174,15 +174,15 @@ def assess_risks(facts: str) -> List[RiskItem]:
 
 def compute_score(facts: str, evidence_count: int) -> WinningFactor:
     """Compute a simple case-strength score based on facts length and evidence."""
-    facts_lower = facts.lower()  # Cache lowercase conversion
-    base = 80 if len(facts) > 60 else 60
-    if "breach" in facts_lower:
-        base += 5
+    facts_lowercase = facts.lower()  # Cache lowercase conversion
+    base_clarity_score = 80 if len(facts) > 60 else 60
+    if "breach" in facts_lowercase:
+        base_clarity_score += 5
     return WinningFactor(
         element_score=90,
         evidence_score=min(100, 70 + evidence_count * 5),
-        clarity_score=min(100, base),
-        risk_penalty=10 if "eye" in facts_lower else 0
+        clarity_score=min(100, base_clarity_score),
+        risk_penalty=10 if "eye" in facts_lowercase else 0
     )
 
 
