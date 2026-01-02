@@ -7,7 +7,7 @@ Outlaw Legal AI is a FastAPI-based automated legal support and analysis engine. 
 ## Technology Stack
 
 - **Framework**: FastAPI (Python web framework)
-- **Python Version**: Python 3.x
+- **Python Version**: Python 3.12 (as specified in Dockerfile)
 - **Testing**: pytest with FastAPI TestClient
 - **PDF Generation**: ReportLab
 - **HTTP Client**: requests library
@@ -189,8 +189,9 @@ pytest -v
 ## Deployment
 
 - Application can be deployed using Docker
-- See `README_DEPLOY.md` for deployment instructions
+- See `README_DEPLOY.md` for local setup instructions
 - Configuration via `render.yaml` for Render platform
+- Docker image uses Python 3.12-slim base
 - Ensure all environment variables are properly set
 
 ## Support and Resources
