@@ -13,7 +13,7 @@ Outlaw Legal AI is a FastAPI-based automated legal support and analysis engine. 
 - **HTTP Client**: requests library
 - **Type Validation**: Pydantic v2
 - **Server**: uvicorn
-- **Logging**: Python logging module
+- **Logging**: Python standard logging module (loguru available as optional development dependency)
 
 ## Repository Structure
 
@@ -125,7 +125,9 @@ pytest -v
 
 ## Logging
 
-- Use the configured logger instance: `logger = logging.getLogger("outlaw")`
+- Use the configured logger instance: `logger = logging.getLogger("outlaw")` or module-specific logger
+- The codebase currently uses Python's standard `logging` module
+- `loguru` is available as an optional development dependency but not currently used in production code
 - Log at appropriate levels (INFO, WARNING, ERROR)
 - Include contextual information in log messages
 - Log API requests and external service calls
