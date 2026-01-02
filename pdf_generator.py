@@ -39,6 +39,14 @@ BRANDING = {
 # Cache the resolved logo path at module level to avoid repeated path resolution
 _LOGO_PATH = Path(__file__).resolve().parent / BRANDING["logo_path"]
 _LOGO_EXISTS = _LOGO_PATH.exists()
+# Pre-load logo image reader if logo exists for better performance
+_LOGO_IMAGE = None
+if _LOGO_EXISTS:
+    try:
+        _LOGO_IMAGE = ImageReader(str(_LOGO_PATH))
+    except Exception as e:
+        logger.warning(f"Could not load logo at startup: {e}")
+        _LOGO_IMAGE = None
 
 
 def _draw_header(pdf_canvas: canvas.Canvas, width: float, height: float):
@@ -51,11 +59,10 @@ def _draw_header(pdf_canvas: canvas.Canvas, width: float, height: float):
     pdf_canvas.setFont("Helvetica", 10)
     pdf_canvas.drawString(1 * inch, height - 0.95 * inch, BRANDING["tagline"])
 
-    # Draw logo if available (using cached path check)
-    if _LOGO_EXISTS:
+    # Draw logo if available (using cached image reader)
+    if _LOGO_IMAGE is not None:
         try:
-            img = ImageReader(str(_LOGO_PATH))
-            pdf_canvas.drawImage(img, width - 1.5 * inch, height - 0.95 * inch,
+            pdf_canvas.drawImage(_LOGO_IMAGE, width - 1.5 * inch, height - 0.95 * inch,
                         width=1.1 * inch, height=0.7 * inch, mask="auto")
         except Exception as e:
             logger.warning(f"Could not draw logo: {e}")
