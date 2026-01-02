@@ -172,6 +172,11 @@ def assess_risks(facts_lowercase: str) -> List[RiskItem]:
     
     Args:
         facts_lowercase: Pre-lowercased facts string for efficient keyword matching
+    
+    Note:
+        Accepts pre-lowercased string to avoid redundant .lower() calls.
+        The caller (build_legal_support) converts facts to lowercase once and
+        passes it to multiple functions for efficiency.
     """
     risks = []
     if "inspect" in facts_lowercase or "eye" in facts_lowercase:
@@ -190,6 +195,11 @@ def compute_score(facts: str, facts_lowercase: str, evidence_count: int) -> Winn
         facts: Original facts string (for length calculation)
         facts_lowercase: Pre-lowercased facts string for efficient keyword matching
         evidence_count: Number of evidence items provided
+    
+    Note:
+        Accepts both facts and facts_lowercase to avoid redundant .lower() calls.
+        The caller (build_legal_support) converts facts to lowercase once and
+        passes it to multiple functions for efficiency.
     """
     base_clarity_score = 80 if len(facts) > 60 else 60
     if "breach" in facts_lowercase:
