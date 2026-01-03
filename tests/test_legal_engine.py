@@ -16,15 +16,19 @@ from legal_engine import (
 
 def test_compute_score_increases_with_evidence():
     """Higher evidence count should increase evidence_score."""
-    low = compute_score("simple contract", 0)
-    high = compute_score("simple contract", 4)
+    facts = "simple contract"
+    facts_lowercase = facts.lower()
+    low = compute_score(facts, facts_lowercase, 0)
+    high = compute_score(facts, facts_lowercase, 4)
     assert high.evidence_score > low.evidence_score
     assert 0 <= high.overall <= 100
 
 
 def test_assess_risks_detects_inspection_issue():
     """Should detect 'inspect' keyword and mark risk as medium."""
-    risks = assess_risks("The buyer refused to inspect the item.")
+    facts = "The buyer refused to inspect the item."
+    facts_lowercase = facts.lower()
+    risks = assess_risks(facts_lowercase)
     assert any(r.severity == "medium" for r in risks)
 
 

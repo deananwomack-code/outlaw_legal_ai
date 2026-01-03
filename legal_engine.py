@@ -15,6 +15,14 @@ from typing import List, Dict, Any, Optional
 logger = logging.getLogger(__name__)
 
 # ============================================================
+# HTTP SESSION FOR CONNECTION REUSE
+# ============================================================
+
+# Reuse HTTP session for better performance with connection pooling
+_http_session = requests.Session()
+_http_session.headers.update({"User-Agent": "Outlaw-Legal-AI/1.0"})
+
+# ============================================================
 # DATA CLASSES
 # ============================================================
 
@@ -100,7 +108,7 @@ def fetch_statutes_from_api(jurisdiction: str, query: str) -> List[Statute]:
     """
     url = f"https://api.govinfo.gov/collections/{jurisdiction.lower()}code/2022-01-01"
     try:
-        api_response = requests.get(url, timeout=API_TIMEOUT_SECONDS)
+        api_response = _http_session.get(url, timeout=API_TIMEOUT_SECONDS)
         api_response.raise_for_status()
         data = api_response.json()
         results = []
@@ -159,10 +167,18 @@ def fallback_procedures() -> List[ProceduralRule]:
 # RISK + SCORING
 # ============================================================
 
-def assess_risks(facts: str) -> List[RiskItem]:
-    """Simple keyword-based risk assessment."""
+def assess_risks(facts_lowercase: str) -> List[RiskItem]:
+    """Simple keyword-based risk assessment.
+    
+    Args:
+        facts_lowercase: Pre-lowercased facts string for efficient keyword matching
+    
+    Note:
+        Accepts pre-lowercased string to avoid redundant .lower() calls.
+        The caller (build_legal_support) converts facts to lowercase once and
+        passes it to multiple functions for efficiency.
+    """
     risks = []
-    facts_lowercase = facts.lower()
     if "inspect" in facts_lowercase or "eye" in facts_lowercase:
         risks.append(RiskItem("medium", "Possible nondisclosure claim", "Show refusal to inspect."))
     elif "oral" in facts_lowercase:
@@ -172,9 +188,19 @@ def assess_risks(facts: str) -> List[RiskItem]:
     return risks
 
 
-def compute_score(facts: str, evidence_count: int) -> WinningFactor:
-    """Compute a simple case-strength score based on facts length and evidence."""
-    facts_lowercase = facts.lower()  # Cache lowercase conversion
+def compute_score(facts: str, facts_lowercase: str, evidence_count: int) -> WinningFactor:
+    """Compute a simple case-strength score based on facts length and evidence.
+    
+    Args:
+        facts: Original facts string (for length calculation)
+        facts_lowercase: Pre-lowercased facts string for efficient keyword matching
+        evidence_count: Number of evidence items provided
+    
+    Note:
+        Accepts both facts and facts_lowercase to avoid redundant .lower() calls.
+        The caller (build_legal_support) converts facts to lowercase once and
+        passes it to multiple functions for efficiency.
+    """
     base_clarity_score = 80 if len(facts) > 60 else 60
     if "breach" in facts_lowercase:
         base_clarity_score += 5
@@ -198,10 +224,13 @@ def build_legal_support(
 ) -> LegalSupportResponse:
     """Master entry point used by app.py"""
     evidence = evidence or []
+    # Convert facts to lowercase once for efficiency across multiple function calls
+    facts_lowercase = facts.lower()
+    
     statutes = fetch_statutes_from_api(jurisdiction, "contract") or fallback_statutes()
     procedures = fallback_procedures()
-    risks = assess_risks(facts)
-    score = compute_score(facts, len(evidence))
+    risks = assess_risks(facts_lowercase)
+    score = compute_score(facts, facts_lowercase, len(evidence))
 
     response = LegalSupportResponse(
         jurisdiction=jurisdiction,
