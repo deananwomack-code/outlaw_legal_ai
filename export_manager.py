@@ -1,0 +1,302 @@
+"""
+export_manager.py — Multi-format export for legal analysis
+----------------------------------------------------------
+Provides export functionality for HTML, Markdown, and plain text formats
+in addition to the existing PDF export.
+"""
+
+from typing import Dict, Any
+from datetime import datetime
+import logging
+
+logger = logging.getLogger("outlaw.export")
+
+# ============================================================
+# HTML EXPORT
+# ============================================================
+
+def export_to_html(data: Dict[str, Any]) -> str:
+    """
+    Export legal analysis to HTML format.
+    
+    Args:
+        data: Legal analysis data dictionary
+    
+    Returns:
+        HTML string representation of the analysis
+    """
+    html_parts = [
+        "<!DOCTYPE html>",
+        "<html lang='en'>",
+        "<head>",
+        "<meta charset='UTF-8'>",
+        "<meta name='viewport' content='width=device-width, initial-scale=1.0'>",
+        "<title>Legal Analysis Report</title>",
+        "<style>",
+        "body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; }",
+        "h1 { color: #0D3B66; border-bottom: 3px solid #0D3B66; padding-bottom: 10px; }",
+        "h2 { color: #1A5490; margin-top: 30px; }",
+        ".section { margin: 20px 0; }",
+        ".statute, .procedure, .risk { margin: 15px 0; padding: 10px; background: #f5f5f5; border-left: 4px solid #0D3B66; }",
+        ".score-card { background: #e8f4f8; padding: 15px; border-radius: 5px; margin: 20px 0; }",
+        ".score-item { margin: 8px 0; }",
+        ".label { font-weight: bold; }",
+        ".risk-medium { border-left-color: #ff9800; }",
+        ".risk-high { border-left-color: #f44336; }",
+        ".footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #ccc; font-size: 0.9em; color: #666; }",
+        "</style>",
+        "</head>",
+        "<body>",
+        "<h1>Legal Support Analysis Report</h1>",
+        f"<p><strong>Jurisdiction:</strong> {data.get('jurisdiction', 'N/A')}</p>",
+        f"<p><strong>County:</strong> {data.get('county', 'N/A')}</p>",
+        f"<p><strong>Generated:</strong> {datetime.now().strftime('%Y-%m-%d %H:%M')}</p>",
+        "",
+        "<div class='section'>",
+        "<h2>Facts</h2>",
+        f"<p>{data.get('facts', 'N/A')}</p>",
+        "</div>",
+    ]
+    
+    # Statutes
+    html_parts.append("<div class='section'>")
+    html_parts.append("<h2>Applicable Statutes</h2>")
+    for statute in data.get('statutes', []):
+        html_parts.append("<div class='statute'>")
+        html_parts.append(f"<p class='label'>{statute.get('citation', '')} — {statute.get('title', '')}</p>")
+        html_parts.append(f"<p>{statute.get('summary', '')}</p>")
+        if statute.get('elements'):
+            html_parts.append("<ul>")
+            for element in statute['elements']:
+                html_parts.append(f"<li><strong>{element.get('name', '')}:</strong> {element.get('description', '')}</li>")
+            html_parts.append("</ul>")
+        html_parts.append("</div>")
+    html_parts.append("</div>")
+    
+    # Procedures
+    html_parts.append("<div class='section'>")
+    html_parts.append("<h2>Procedural Rules</h2>")
+    for procedure in data.get('procedures', []):
+        html_parts.append("<div class='procedure'>")
+        html_parts.append(f"<p><strong>{procedure.get('name', '')}:</strong> {procedure.get('description', '')}</p>")
+        html_parts.append("</div>")
+    html_parts.append("</div>")
+    
+    # Risks
+    html_parts.append("<div class='section'>")
+    html_parts.append("<h2>Risk Assessment</h2>")
+    for risk in data.get('risks', []):
+        severity = risk.get('severity', 'low')
+        html_parts.append(f"<div class='risk risk-{severity}'>")
+        html_parts.append(f"<p class='label'>[{severity.upper()}] {risk.get('description', '')}</p>")
+        html_parts.append(f"<p><em>Mitigation:</em> {risk.get('mitigation', '')}</p>")
+        html_parts.append("</div>")
+    html_parts.append("</div>")
+    
+    # Score
+    score = data.get('score', {})
+    html_parts.append("<div class='section'>")
+    html_parts.append("<h2>Case Strength Score</h2>")
+    html_parts.append("<div class='score-card'>")
+    html_parts.append(f"<div class='score-item'><strong>Overall Score:</strong> {score.get('overall', 0)}/100</div>")
+    html_parts.append(f"<div class='score-item'>Element Coverage: {score.get('element_score', 0)}</div>")
+    html_parts.append(f"<div class='score-item'>Evidence Strength: {score.get('evidence_score', 0)}</div>")
+    html_parts.append(f"<div class='score-item'>Narrative Clarity: {score.get('clarity_score', 0)}</div>")
+    html_parts.append(f"<div class='score-item'>Risk Penalty: {score.get('risk_penalty', 0)}</div>")
+    html_parts.append("</div>")
+    html_parts.append("</div>")
+    
+    # Footer
+    html_parts.append("<div class='footer'>")
+    html_parts.append("<p>Generated by Outlaw Legal AI © 2025 — Confidential Report</p>")
+    html_parts.append("<p>This report is for informational purposes only and does not constitute legal advice.</p>")
+    html_parts.append("</div>")
+    
+    html_parts.append("</body>")
+    html_parts.append("</html>")
+    
+    return "\n".join(html_parts)
+
+
+# ============================================================
+# MARKDOWN EXPORT
+# ============================================================
+
+def export_to_markdown(data: Dict[str, Any]) -> str:
+    """
+    Export legal analysis to Markdown format.
+    
+    Args:
+        data: Legal analysis data dictionary
+    
+    Returns:
+        Markdown string representation of the analysis
+    """
+    md_parts = [
+        "# Legal Support Analysis Report",
+        "",
+        f"**Jurisdiction:** {data.get('jurisdiction', 'N/A')}  ",
+        f"**County:** {data.get('county', 'N/A')}  ",
+        f"**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M')}",
+        "",
+        "---",
+        "",
+        "## Facts",
+        "",
+        data.get('facts', 'N/A'),
+        "",
+        "## Applicable Statutes",
+        "",
+    ]
+    
+    for statute in data.get('statutes', []):
+        md_parts.append(f"### {statute.get('citation', '')} — {statute.get('title', '')}")
+        md_parts.append("")
+        md_parts.append(statute.get('summary', ''))
+        if statute.get('elements'):
+            md_parts.append("")
+            md_parts.append("**Elements:**")
+            for element in statute['elements']:
+                md_parts.append(f"- **{element.get('name', '')}:** {element.get('description', '')}")
+        md_parts.append("")
+    
+    md_parts.append("## Procedural Rules")
+    md_parts.append("")
+    for procedure in data.get('procedures', []):
+        md_parts.append(f"- **{procedure.get('name', '')}:** {procedure.get('description', '')}")
+    md_parts.append("")
+    
+    md_parts.append("## Risk Assessment")
+    md_parts.append("")
+    for risk in data.get('risks', []):
+        md_parts.append(f"### [{risk.get('severity', '').upper()}] {risk.get('description', '')}")
+        md_parts.append(f"**Mitigation:** {risk.get('mitigation', '')}")
+        md_parts.append("")
+    
+    score = data.get('score', {})
+    md_parts.append("## Case Strength Score")
+    md_parts.append("")
+    md_parts.append(f"- **Overall Score:** {score.get('overall', 0)}/100")
+    md_parts.append(f"- Element Coverage: {score.get('element_score', 0)}")
+    md_parts.append(f"- Evidence Strength: {score.get('evidence_score', 0)}")
+    md_parts.append(f"- Narrative Clarity: {score.get('clarity_score', 0)}")
+    md_parts.append(f"- Risk Penalty: {score.get('risk_penalty', 0)}")
+    md_parts.append("")
+    md_parts.append("---")
+    md_parts.append("")
+    md_parts.append("*Generated by Outlaw Legal AI © 2025 — Confidential Report*")
+    md_parts.append("")
+    md_parts.append("*This report is for informational purposes only and does not constitute legal advice.*")
+    
+    return "\n".join(md_parts)
+
+
+# ============================================================
+# PLAIN TEXT EXPORT
+# ============================================================
+
+def export_to_text(data: Dict[str, Any]) -> str:
+    """
+    Export legal analysis to plain text format.
+    
+    Args:
+        data: Legal analysis data dictionary
+    
+    Returns:
+        Plain text string representation of the analysis
+    """
+    text_parts = [
+        "=" * 70,
+        "LEGAL SUPPORT ANALYSIS REPORT",
+        "=" * 70,
+        "",
+        f"Jurisdiction: {data.get('jurisdiction', 'N/A')}",
+        f"County: {data.get('county', 'N/A')}",
+        f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}",
+        "",
+        "-" * 70,
+        "FACTS",
+        "-" * 70,
+        "",
+        data.get('facts', 'N/A'),
+        "",
+        "-" * 70,
+        "APPLICABLE STATUTES",
+        "-" * 70,
+        "",
+    ]
+    
+    for statute in data.get('statutes', []):
+        text_parts.append(f"{statute.get('citation', '')} — {statute.get('title', '')}")
+        text_parts.append(f"  {statute.get('summary', '')}")
+        if statute.get('elements'):
+            text_parts.append("  Elements:")
+            for element in statute['elements']:
+                text_parts.append(f"    - {element.get('name', '')}: {element.get('description', '')}")
+        text_parts.append("")
+    
+    text_parts.append("-" * 70)
+    text_parts.append("PROCEDURAL RULES")
+    text_parts.append("-" * 70)
+    text_parts.append("")
+    for procedure in data.get('procedures', []):
+        text_parts.append(f"  • {procedure.get('name', '')}: {procedure.get('description', '')}")
+    text_parts.append("")
+    
+    text_parts.append("-" * 70)
+    text_parts.append("RISK ASSESSMENT")
+    text_parts.append("-" * 70)
+    text_parts.append("")
+    for risk in data.get('risks', []):
+        text_parts.append(f"  [{risk.get('severity', '').upper()}] {risk.get('description', '')}")
+        text_parts.append(f"  → Mitigation: {risk.get('mitigation', '')}")
+        text_parts.append("")
+    
+    score = data.get('score', {})
+    text_parts.append("-" * 70)
+    text_parts.append("CASE STRENGTH SCORE")
+    text_parts.append("-" * 70)
+    text_parts.append("")
+    text_parts.append(f"  Overall Score: {score.get('overall', 0)}/100")
+    text_parts.append(f"  Element Coverage: {score.get('element_score', 0)}")
+    text_parts.append(f"  Evidence Strength: {score.get('evidence_score', 0)}")
+    text_parts.append(f"  Narrative Clarity: {score.get('clarity_score', 0)}")
+    text_parts.append(f"  Risk Penalty: {score.get('risk_penalty', 0)}")
+    text_parts.append("")
+    text_parts.append("=" * 70)
+    text_parts.append("Generated by Outlaw Legal AI © 2025 — Confidential Report")
+    text_parts.append("This report is for informational purposes only and does not")
+    text_parts.append("constitute legal advice.")
+    text_parts.append("=" * 70)
+    
+    return "\n".join(text_parts)
+
+
+# ============================================================
+# MAIN EXPORT FUNCTION
+# ============================================================
+
+def export_analysis(data: Dict[str, Any], format: str) -> str:
+    """
+    Export legal analysis to specified format.
+    
+    Args:
+        data: Legal analysis data dictionary
+        format: Export format ('html', 'markdown', 'text')
+    
+    Returns:
+        Formatted string in the requested format
+    
+    Raises:
+        ValueError: If format is not supported
+    """
+    format_lower = format.lower()
+    
+    if format_lower in ('html', 'htm'):
+        return export_to_html(data)
+    elif format_lower in ('markdown', 'md'):
+        return export_to_markdown(data)
+    elif format_lower in ('text', 'txt'):
+        return export_to_text(data)
+    else:
+        raise ValueError(f"Unsupported export format: {format}. Supported formats: html, markdown, text")

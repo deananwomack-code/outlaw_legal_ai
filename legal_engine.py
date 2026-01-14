@@ -12,6 +12,8 @@ import logging
 from dataclasses import dataclass, asdict, field
 from typing import List, Dict, Any, Optional
 
+from cache_manager import cached, generate_cache_key, get_cached, set_cached
+
 logger = logging.getLogger(__name__)
 
 # ============================================================
@@ -105,7 +107,15 @@ def fetch_statutes_from_api(jurisdiction: str, query: str) -> List[Statute]:
     """
     Try to get a few statute summaries from a public source (govinfo.gov).
     Fallback to local data if the API is unavailable.
+    Results are cached to reduce API calls.
     """
+    # Check cache first
+    cache_key = generate_cache_key("statutes", jurisdiction, query)
+    cached_result = get_cached(cache_key)
+    if cached_result is not None:
+        logger.info(f"Using cached statutes for {jurisdiction}")
+        return cached_result
+    
     url = f"https://api.govinfo.gov/collections/{jurisdiction.lower()}code/2022-01-01"
     try:
         api_response = _http_session.get(url, timeout=API_TIMEOUT_SECONDS)
@@ -121,6 +131,10 @@ def fetch_statutes_from_api(jurisdiction: str, query: str) -> List[Statute]:
                 summary=f"Reference from public collection: {title}"
             ))
         logger.info(f"Fetched {len(results)} statutes from API for {jurisdiction}.")
+        
+        # Cache the results
+        set_cached(cache_key, results, ttl=3600)
+        
         return results
     except requests.exceptions.RequestException as e:
         logger.warning(f"Statute API fetch failed for {jurisdiction}: {e}")
