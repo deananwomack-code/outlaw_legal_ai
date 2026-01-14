@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outlaw Legal AI</title>
+    <link rel="icon" type="image/png" href="/static/favicon.png">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Outlaw Legal AI</h1>
+            <p class="tagline">Your Data-Driven Legal Strategy Partner</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="intro">
+            <h2>Legal Support Analysis</h2>
+            <p>Get AI-powered legal analysis for your case. Fill in the details below to receive a comprehensive legal support report.</p>
+        </section>
+
+        <form id="legal-form" class="legal-form">
+            <div class="form-group">
+                <label for="jurisdiction">Jurisdiction (State)</label>
+                <input type="text" id="jurisdiction" name="jurisdiction" placeholder="e.g., California" required>
+            </div>
+
+            <div class="form-group">
+                <label for="county">County</label>
+                <input type="text" id="county" name="county" placeholder="e.g., Riverside" required>
+            </div>
+
+            <div class="form-group">
+                <label for="facts">Case Facts (minimum 20 characters)</label>
+                <textarea id="facts" name="facts" rows="6" placeholder="Describe the facts of your case in detail. For example: Buyer failed to pay $5,000 after taking possession of the horse on January 15, 2025. Multiple payment reminders were sent but ignored." required minlength="20"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Evidence Items (optional)</label>
+                <div id="evidence-container"></div>
+                <button type="button" id="add-evidence" class="btn-secondary">+ Add Evidence</button>
+            </div>
+
+            <div class="form-group">
+                <label for="output-format">Output Format</label>
+                <select id="output-format" name="requested_output">
+                    <option value="json">JSON (View in Browser)</option>
+                    <option value="pdf">PDF Report (Download)</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn-primary" id="submit-btn">Generate Legal Analysis</button>
+        </form>
+
+        <div id="loading" class="loading hidden">
+            <div class="spinner"></div>
+            <p>Generating your legal analysis...</p>
+        </div>
+
+        <section id="results" class="results hidden">
+            <h2>Analysis Results</h2>
+            <div id="results-content"></div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>Outlaw Legal AI - Confidential Legal Analysis Tool</p>
+            <p class="api-info">API Endpoint: POST /legal-support | <a href="/docs">API Documentation</a></p>
+        </div>
+    </footer>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
