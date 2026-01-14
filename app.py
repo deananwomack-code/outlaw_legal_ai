@@ -80,6 +80,9 @@ logger = logging.getLogger("outlaw")
 # Thread pool for async execution of CPU-bound tasks
 executor = ThreadPoolExecutor(max_workers=4)
 
+# Application start time for uptime tracking
+APP_START_TIME = time.time()
+
 
 # ============================================================
 # Pydantic Models for Request Validation
@@ -404,18 +407,18 @@ async def get_analytics():
     
     Returns:
     - Cache statistics
-    - Request counters
+    - Request counters (approximated from cache usage)
     - System uptime
     """
     cache_stats = get_cache_stats()
     
-    # Calculate uptime (simplified - would use actual start time in production)
-    uptime = time.time() % 86400  # Placeholder for actual uptime
+    # Calculate actual uptime
+    uptime = time.time() - APP_START_TIME
     
     return {
-        "total_requests": cache_stats.get("size", 0),
+        "total_requests": cache_stats.get("size", 0),  # Approximation based on cache usage
         "cache_stats": cache_stats,
-        "uptime_seconds": uptime
+        "uptime_seconds": round(uptime, 2)
     }
 
 
@@ -479,6 +482,9 @@ async def list_jurisdictions():
     Get list of supported jurisdictions and counties.
     
     Returns information about supported legal jurisdictions and their counties.
+    
+    Note: This data is currently hardcoded but could be moved to a configuration
+    file or database for better maintainability in production deployments.
     """
     return {
         "jurisdictions": [

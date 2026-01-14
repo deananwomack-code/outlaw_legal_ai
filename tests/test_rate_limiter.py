@@ -150,4 +150,4 @@ def test_rate_limiter_retry_after():
     is_allowed, _, retry_after = limiter.is_allowed("client1")
     assert is_allowed is False
     assert retry_after > 0
-    assert retry_after <= 11  # Should be within window + 1
+    assert retry_after <= limiter.window_seconds + 1  # Should be within window + 1

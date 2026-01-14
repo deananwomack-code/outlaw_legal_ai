@@ -12,7 +12,7 @@ import logging
 from dataclasses import dataclass, asdict, field
 from typing import List, Dict, Any, Optional
 
-from cache_manager import cached, generate_cache_key, get_cached, set_cached
+from cache_manager import generate_cache_key, get_cached, set_cached
 
 logger = logging.getLogger(__name__)
 

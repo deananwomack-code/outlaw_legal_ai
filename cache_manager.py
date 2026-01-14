@@ -5,7 +5,6 @@ Provides fast caching for API responses and statute lookups to reduce
 redundant external API calls and computation.
 """
 
-from functools import lru_cache
 from typing import Optional, Dict, Any
 import hashlib
 import json
@@ -145,7 +144,16 @@ def get_cache_stats() -> Dict[str, int]:
 # ============================================================
 
 def cached(ttl: int = CACHE_TTL_SECONDS):
-    """Decorator to cache function results."""
+    """
+    Decorator to cache function results.
+    
+    Note: Currently not used in production code but available for future use.
+    Example usage:
+        @cached(ttl=3600)
+        def expensive_function(arg1, arg2):
+            # Computation here
+            return result
+    """
     def decorator(func):
         def wrapper(*args, **kwargs):
             # Generate cache key
