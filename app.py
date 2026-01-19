@@ -74,6 +74,11 @@ static_path = Path(__file__).parent / "static"
 if static_path.exists():
     app.mount("/static", StaticFiles(directory=str(static_path)), name="static")
 
+# Mount assets folder for images
+assets_path = Path(__file__).parent / "assets"
+if assets_path.exists():
+    app.mount("/assets", StaticFiles(directory=str(assets_path)), name="assets")
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("outlaw")
 
