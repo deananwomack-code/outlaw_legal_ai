@@ -3,13 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Outlaw Legal AI</title>
+    <title>Outlaw Legal AI - Legal Support Analysis</title>
+    <meta name="description" content="AI-powered legal analysis for civil cases. Get comprehensive legal support reports with applicable statutes, procedural rules, and risk assessments.">
     <link rel="icon" type="image/png" href="/static/favicon.png">
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/style.css?v=2">
+    <script src="/static/app.js?v=2" defer></script>
 </head>
 <body>
     <header>
-        <div class="container">
+        <div class="container header-content">
             <h1>Outlaw Legal AI</h1>
             <p class="tagline">Your Data-Driven Legal Strategy Partner</p>
         </div>
@@ -18,29 +20,36 @@
     <main class="container">
         <section class="intro">
             <h2>Legal Support Analysis</h2>
-            <p>Get AI-powered legal analysis for your case. Fill in the details below to receive a comprehensive legal support report.</p>
+            <p>Get AI-powered legal analysis for your case. Fill in the details below to receive a comprehensive legal support report with applicable statutes, procedural rules, and risk assessments.</p>
         </section>
 
         <form id="legal-form" class="legal-form">
             <div class="form-group">
                 <label for="jurisdiction">Jurisdiction (State)</label>
-                <input type="text" id="jurisdiction" name="jurisdiction" placeholder="e.g., California" required>
+                <input type="text" id="jurisdiction" name="jurisdiction" placeholder="e.g., California" required autocomplete="off">
+                <span class="error-message" id="jurisdiction-error">Please enter a valid jurisdiction</span>
             </div>
 
             <div class="form-group">
                 <label for="county">County</label>
-                <input type="text" id="county" name="county" placeholder="e.g., Riverside" required>
+                <input type="text" id="county" name="county" placeholder="e.g., Riverside" required autocomplete="off">
+                <span class="error-message" id="county-error">Please enter a valid county</span>
             </div>
 
             <div class="form-group">
-                <label for="facts">Case Facts (minimum 20 characters)</label>
+                <label for="facts">Case Facts <span class="label-hint">(minimum 20 characters)</span></label>
                 <textarea id="facts" name="facts" rows="6" placeholder="Describe the facts of your case in detail. For example: Buyer failed to pay $5,000 after taking possession of the horse on January 15, 2025. Multiple payment reminders were sent but ignored." required minlength="20"></textarea>
+                <div class="char-counter" id="facts-counter">0 / 20 characters minimum</div>
+                <span class="error-message" id="facts-error">Please provide at least 20 characters describing your case</span>
             </div>
 
             <div class="form-group">
-                <label>Evidence Items (optional)</label>
-                <div id="evidence-container"></div>
-                <button type="button" id="add-evidence" class="btn-secondary">+ Add Evidence</button>
+                <label>Evidence Items <span class="label-hint">(optional)</span></label>
+                <div id="evidence-container" class="evidence-section"></div>
+                <button type="button" id="add-evidence" class="btn-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    Add Evidence
+                </button>
             </div>
 
             <div class="form-group">
@@ -51,12 +60,17 @@
                 </select>
             </div>
 
-            <button type="submit" class="btn-primary" id="submit-btn">Generate Legal Analysis</button>
+            <button type="submit" class="btn-primary" id="submit-btn">
+                <span id="btn-text">Generate Legal Analysis</span>
+            </button>
         </form>
 
         <div id="loading" class="loading hidden">
             <div class="spinner"></div>
-            <p>Generating your legal analysis...</p>
+            <p>Generating your legal analysis<span class="loading-dots"></span></p>
+            <div class="progress-bar">
+                <div class="progress-bar-fill"></div>
+            </div>
         </div>
 
         <section id="results" class="results hidden">
@@ -72,6 +86,5 @@
         </div>
     </footer>
 
-    <script src="/static/app.js"></script>
 </body>
 </html>
